@@ -1,0 +1,19 @@
+[Unit]
+Description=Mongodb Exporter
+After=network.target
+
+[Service]
+User={{ mongodb_exporter_user }}
+Group={{ mongodb_exporter_user }}
+Type=simple
+ExecReload=/bin/kill -HUP $MAINPID
+{% if mongodb_username is defined %}
+ExecStart=/usr/local/bin/mongodb_exporter --mongodb.uri=mongodb://{{ mongodb_username }}:{{ mongodb_password }}@{{ mongodb_uri }}:{{ mongodb_port }}
+{% else %}
+ExecStart=/usr/local/bin/mongodb_exporter --mongodb.uri=mongodb://{{ mongodb_uri }}:{{ mongodb_port }}
+{% endif %}
+SyslogIdentifier=mongodb_exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,18 @@
+global:
+  smtp_from: '{{ smtp_from }}'
+  smtp_smarthost: {{ smtp_smarthost }}
+  smtp_auth_username: '{{ smtp_auth_username }}'
+  smtp_auth_identity: '{{ smtp_auth_identity }}'
+  smtp_auth_password: '{{ smtp_auth_password }}'
+  
+
+route:
+  receiver: email
+  group_by: [alertname, instance, severity, job]
+  repeat_interval: {{ repeat_interval }}
+
+receivers:
+- name: email
+  email_configs:
+          - to: '{{ receivers }}' 
+            send_resolved: true

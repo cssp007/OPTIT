@@ -1,0 +1,6 @@
+---
+- hosts: mongodb_exporter
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/ansible/mongodb_exporter

@@ -1,0 +1,62 @@
+---
+# tasks file for blackbox-exporter
+- name: Adding the user for blackbox exporter
+  user:
+    name: '{{ blackbox_exporter_user }}'
+    create_home: no
+    shell: /bin/false
+
+- name: Create a directory if it does not exist
+  file:
+    path: /etc/blackbox_exporter
+    state: directory
+    mode: '0755'
+    owner: '{{ blackbox_exporter_user }}'
+    group: '{{ blackbox_exporter_user }}'
+
+- name: Download and extracted blackbox exporter
+  unarchive:
+    src: https://github.com/prometheus/blackbox_exporter/releases/download/v{{ blackbox_exporter_version }}/blackbox_exporter-{{ blackbox_exporter_version }}.linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: True
+
+- name: Copy blackbox exporter excutable file
+  copy:
+    src: '{{ item }}'
+    dest: /usr/local/bin/
+    remote_src: yes
+    mode: 0770
+    owner: '{{ blackbox_exporter_user }}'
+    group: '{{ blackbox_exporter_user }}'
+  with_items:
+    - /tmp/blackbox_exporter-{{ blackbox_exporter_version }}.linux-amd64/blackbox_exporter
+
+- name: Copy blackbox exporter service file
+  template:
+    src: '{{ item }}'
+    dest: /etc/systemd/system/
+  with_items:
+    - blackbox_exporter.service
+
+- name: Copy blackbox exporter service file
+  template:
+    src: '{{ item }}'
+    dest: /etc/blackbox_exporter/blackbox.yml
+    owner: '{{ blackbox_exporter_user }}'
+    group: '{{ blackbox_exporter_user }}'
+  with_items:
+    - blackbox.yml
+
+- name: Force systemd to reread configs
+  systemd: daemon_reload=yes
+
+- name: Start service blackbox_exporter, if not started
+  service:
+    name: blackbox_exporter
+    state: started
+    enabled: yes
+
+- name: Delete download
+  file:
+    path: /tmp/blackbox_exporter-{{ blackbox_exporter_version }}.linux-amd64
+    state: absent

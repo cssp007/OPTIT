@@ -1,0 +1,101 @@
+---
+# tasks file for pritunl
+- name: Update cache
+  apt:
+    update_cache: yes
+
+- name: Install packages
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - wget
+    - curl
+    - unzip
+    - gnupg
+    - gnupg2
+
+- name: Add the MongoDB GPG key
+  apt_key:
+    url: '{{ mongodb_key }}'
+    state: present
+
+- name: Add MongoDB repository for Ubuntu 20.04
+  apt_repository:
+    repo: '{{ mongodb_repo }}'
+    state: present
+    filename: mongodb-org
+  when: ansible_facts['distribution_major_version'] == "20"
+
+- name: Add pritunl key
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: '{{ pritunl_key_id }}'
+
+- name: Add pritunl repository for Ubuntu 20.04
+  apt_repository:
+    repo: '{{ pritunl_repo }}'
+    state: present
+    filename: pritunl
+  when: ansible_facts['distribution_major_version'] == "20"
+
+- name: Update cache
+  apt:
+    update_cache: yes
+
+- name: Install mongo packages
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - mongodb-org
+
+- name: Install pritunl packages
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - pritunl
+
+- name: Change value in /etc/security/limits.conf
+  lineinfile:
+    path: /etc/security/limits.conf
+    regexp: "{{ item.search }}" 
+    line: "{{ item.change }}"
+    state: present
+  with_items:
+    - { search: '\* hard nofile', change: '* hard nofile 64000' }
+    - { search: '\* soft nofile', change: '* soft nofile 64000' }
+    - { search: 'root hard nofile', change: 'root hard nofile 64000' }
+    - { search: 'root soft nofile', change: 'root soft nofile 64000' }
+
+- name: Start and enable service
+  service:
+    name: '{{ item }}'
+    state: started
+    enabled: yes
+  with_items:
+    - mongod
+    - pritunl
+
+- name: Get setup key
+  command: 'pritunl setup-key'
+  register: pritunl_setup_key
+
+- name: Below are the pritunl_setup_key for Ubuntu 20
+  debug:
+    var: pritunl_setup_key.stdout_lines[0]
+  when: ansible_facts['distribution_major_version'] == "20"
+
+- name: Wait for 2 min
+  wait_for:
+    timeout: 120
+
+- name: Get default username and password
+  command: 'pritunl default-password'
+  register: pritunl_default_password
+
+- name: Below are the pritunl default username and password for Ubuntu 20
+  debug:
+    var: pritunl_default_password.stdout_lines
+  when: ansible_facts['distribution_major_version'] == "20"

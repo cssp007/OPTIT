@@ -1,0 +1,15 @@
+[Unit]
+Description=MySQL Exporter Service
+Wants=network.target
+After=network.target
+
+[Service]
+User={{mysqld_exporter_user}}
+Group={{mysqld_exporter_user}}
+Environment="DATA_SOURCE_NAME={{ database_username }}:{{ database_password }}@({{ database_server }}:{{ database_port }})/"
+Type=simple
+ExecStart=/usr/local/bin/mysqld_exporter --collect.info_schema.innodb_tablespaces --collect.perf_schema.eventsstatementssum --collect.perf_schema.memory_events --collect.perf_schema.replication_group_members --collect.perf_schema.replication_group_member_stats --collect.perf_schema.replication_applier_status_by_worker
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

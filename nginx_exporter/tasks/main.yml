@@ -1,0 +1,50 @@
+---
+# tasks file for nginx-exporter
+- name: Adding the user for nginx exporter
+  user:
+    name: '{{ nginx_exporter_user }}'
+    shell: /bin/false
+    create_home: no
+
+- name: Download and extracted nginx exporter
+  unarchive:
+    src: https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v{{ nginx_exporter_version }}/nginx-prometheus-exporter_{{ nginx_exporter_version }}_linux_amd64.tar.gz 
+    dest: /tmp/
+    remote_src: True
+
+- name: Copy nginx exporter excutable file
+  copy:
+    src: '/tmp/{{ item }}'
+    dest: '/usr/local/bin/{{ item }}'
+    remote_src: yes
+    owner: '{{ nginx_exporter_user }}'
+    group: '{{ nginx_exporter_user }}'
+    mode: 0770
+  with_items:
+    - nginx-prometheus-exporter
+
+- name: Copy nginx exporter service file
+  template:
+    src: '{{ item }}'
+    dest: /etc/systemd/system/nginx_exporter.service
+  with_items:
+    - nginx_exporter.service.j2
+
+- name: Force systemd to reread configs
+  systemd: daemon_reload=yes
+
+- name: Start service apache_exporter, if not started
+  service:
+    name: nginx_exporter
+    state: started
+    enabled: yes
+
+- name: Delete download
+  file:
+    path: '/tmp/{{ item }}'
+    state: absent
+  with_items:
+    - CHANGELOG.md
+    - LICENSE
+    - README.md
+    - nginx-prometheus-exporter

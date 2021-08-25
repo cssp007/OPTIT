@@ -1,0 +1,105 @@
+---
+# tasks file for Wazuh
+# Installing Wazuh 
+- name: Run the equivalent of "apt-get update" as a separate step
+  apt:
+    update_cache: yes
+
+- name: Install required packages
+  apt:
+    name: [ 'curl', 'apt-transport-https', 'unzip', 'wget', 'libcap2-bin', 'software-properties-common', 'lsb-release', 'gnupg2']
+    state: present
+
+- name: Add an Apt signing key, uses whichever key is at the URL
+  apt_key:
+    url: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+    state: present
+
+- name: Add specified repository into sources list
+  apt_repository:
+    repo: deb https://packages.wazuh.com/4.x/apt/ stable main
+    filename: wazuh
+    state: present
+
+- name: Run the equivalent of "apt-get update" as a separate step
+  apt:
+    update_cache: yes
+
+- name: Install wazuh-manager
+  apt:
+    name: wazuh-manager
+    state: present
+
+- name: Just force systemd to reread configs
+  systemd:
+    daemon_reload: yes
+
+- name: Start and enabled service wazuh-manager , if not started
+  service:
+    name: wazuh-manager
+    state: started
+    enabled: yes
+
+# Configuring Elasticsearch
+- name: Install elasticsearch-oss opendistroforelasticsearch
+  apt:
+    name: ['elasticsearch-oss', 'opendistroforelasticsearch']
+    state: present
+
+- name: Download foo.conf
+  get_url:
+    url: '{{ item.url_name }}'
+    dest: '{{ item.dest_path }}'
+  loop:
+    - {url_name: 'https://packages.wazuh.com/resources/4.1/open-distro/elasticsearch/7.x/elasticsearch_all_in_one.yml', dest_path: /etc/elasticsearch/elasticsearch.yml}
+    - {url_name: 'https://packages.wazuh.com/resources/4.1/open-distro/elasticsearch/roles/roles.yml', dest_path: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml}
+    - {url_name: 'https://packages.wazuh.com/resources/4.1/open-distro/elasticsearch/roles/roles_mapping.yml', dest_path: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml}
+    - {url_name: 'https://packages.wazuh.com/resources/4.1/open-distro/elasticsearch/roles/internal_users.yml', dest_path: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml}
+
+- name: Remove the demo certificates
+  file:
+    path: [ '/etc/elasticsearch/esnode-key.pem', '/etc/elasticsearch/esnode.pem', '/etc/elasticsearch/kirk-key.pem', '/etc/elasticsearch/kirk.pem', '/etc/elasticsearch/root-ca.pem']
+    state: absent
+    
+- name: Download foo.conf
+  get_url:
+    url: '{{ item.url_name }}'
+    dest: '{{ item.dest_path }}'
+    mode: '777'
+  loop:
+    - {url_name: 'https://packages.wazuh.com/resources/4.1/open-distro/tools/certificate-utility/wazuh-cert-tool.sh', dest_path: /root/wazuh-cert-tool.sh}
+    - {url_name: 'https://packages.wazuh.com/resources/4.1/open-distro/tools/certificate-utility/instances_aio.yml', dest_path: /root/instances.yml}
+
+- name: Run script
+  command: 'bash /root/wazuh-cert-tool.sh'
+
+- name: Create certificates dir
+  file:
+    path: /etc/elasticsearch/certs
+    state: directory
+
+- name: Copy the Elasticsearch certificates to their corresponding location
+  copy:
+    src: '/root/certs/{{ item }}'
+    dest: '/etc/elasticsearch/certs/{{ item }}'
+    remote_src: yes
+  with_items:
+    - elasticsearch-key.pem
+    - elasticsearch.pem
+    - admin-key.pem
+    - admin.pem
+    - root-ca.key
+    - root-ca.pem
+
+- name: Just force systemd to reread configs
+  systemd:
+    daemon_reload: yes
+
+- name: Start and enabled service elasticsearch , if not started
+  service:
+    name: elasticsearch
+    state: started
+    enabled: yes
+
+- name: Run the Elasticsearch securityadmin script to load the new certificates information and start the cluster
+  shell: 'export JAVA_HOME=/usr/share/elasticsearch/jdk/ && /usr/share/elasticsearch/plugins/opendistro_security/tools/securityadmin.sh -cd /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/ -nhnv -cacert /etc/elasticsearch/certs/root-ca.pem -cert /etc/elasticsearch/certs/admin.pem -key /etc/elasticsearch/certs/admin-key.pem'

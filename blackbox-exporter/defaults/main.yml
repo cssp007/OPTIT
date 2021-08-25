@@ -1,0 +1,4 @@
+---
+# defaults file for blackbox-exporter
+blackbox_exporter_version: 0.19.0
+blackbox_exporter_user: blackbox_exporter

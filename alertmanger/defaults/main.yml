@@ -1,0 +1,13 @@
+---
+# defaults file for alertmanger
+alertmanager_version: 0.22.2
+alertmanager_user: alertmanger
+smtp_from: cimplyfive.developer@gmail.com
+smtp_smarthost: smtp.gmail.com:587
+smtp_auth_username: cimplyfive.developer@gmail.com
+smtp_auth_identity: "Cimplyfive Alertmanager"
+smtp_auth_password: bxdzvphdcmgvbqhq
+repeat_interval: 4h
+receivers: 'somnath.p@optit.co, pandey.somnath007@gmail.com'
+slack_url: #https://hooks.slack.com/services/your-slack-url
+slack_channel_name: #'#YourChannelName'

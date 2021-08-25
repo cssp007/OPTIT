@@ -1,0 +1,73 @@
+---
+# tasks file for grafana
+- name: Adding an Apt signing key for Grafana
+  apt_key:
+    url: '{{ grafana_key }}'
+    state: present
+
+- name: Adding Grafana repository into sources list
+  apt_repository:
+    repo: '{{ grafana_repo }}'
+    state: present
+    filename: grafana
+
+- name: Updating...
+  apt:
+    update_cache: yes
+
+- name: Installing required packages
+  apt:
+    name: ['apt-transport-https', 'software-properties-common', 'wget', 'grafana']
+    state: latest
+
+- name: Adding data source provisioning file
+  copy:
+    src: '{{ item }}'
+    dest: '/etc/grafana/provisioning/datasources/{{ item }}'
+    owner: root
+    group: grafana
+    mode: 0770
+  with_items:
+    - datasource.yaml
+  notify: Restart grafana
+
+- name: Adding dashboard provisioning file
+  copy:
+    src: '{{ item }}'
+    dest: '/etc/grafana/provisioning/dashboards/{{ item }}'
+    owner: root
+    group: grafana
+    mode: 0640
+  with_items:
+    - dashboards.yml
+  notify: Restart grafana
+
+- name: Create dir for provisioning dashboards
+  file:
+    path: /var/lib/grafana/dashboards
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: 0755
+
+- name: Adding dashboard
+  copy:
+    src: '{{ item }}'
+    dest: '/var/lib/grafana/dashboards/{{ item }}'
+    owner: grafana
+    group: grafana
+    mode: 0644
+  with_items:
+    - mongodb_dashboard.json
+    - infra_dashboard.json
+  notify: Restart grafana
+
+- name: Just force systemd to reread configs
+  systemd:
+    daemon_reload: yes
+
+- name: Start and enable service grafana-server
+  service:
+    name: grafana-server
+    state: started
+    enabled: yes

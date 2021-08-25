@@ -1,0 +1,6 @@
+---
+# defaults file for mongodb_exporter
+mongodb_exporter_version: 0.20.7
+mongodb_exporter_user: mongodb_exporter
+mongodb_uri: 172.16.0.24
+mongodb_port: 27017

@@ -1,0 +1,66 @@
+---
+# vars for prometheus
+prometheus_version: 2.28.1
+prometheus_user: prometheus
+
+# vars for node exporter
+node_exporter_version: 1.2.0
+node_exporter_user: node_exporter
+
+# vars for process exporter
+process_exporter_version: 0.7.5
+process_exporter_user: process_exporter
+
+# vars for Grafana
+grafana_key: "https://packages.grafana.com/gpg.key"
+grafana_repo: "deb https://packages.grafana.com/oss/deb stable main"
+
+# vars for blackbox exporter
+blackbox_exporter_version: 0.19.0
+blackbox_exporter_user: blackbox_exporter
+
+# vars for Alertmanger
+alertmanager_version: 0.22.2
+alertmanager_user: alertmanger
+smtp_from: cimplyfive.developer@gmail.com
+smtp_smarthost: smtp.gmail.com:587
+smtp_auth_username: cimplyfive.developer@gmail.com
+smtp_auth_identity: "Cimplyfive Alertmanager"
+smtp_auth_password: bxdzvphdcmgvbqhq
+repeat_interval: 4h
+receivers: 'somnath.p@optit.co, pandey.somnath007@gmail.com' 
+#slack_url:
+#slack_channel_name:
+
+## Vars for apache exporter
+apache_exporter_user: apache_exporter
+apache_exporter_version: 0.10.0
+# Apache protocol, value is http or https
+apache_protocol: http
+# Apache website name like www.cssp.tech
+scrape_uri: 54.250.19.136
+scrape_uri_port: 80
+# Server status location path
+scrape_uri_location: server-status
+
+## Vars for Kafka
+kafka_exporter_user: kafka_exporter
+kafka_exporter_version: 1.3.1
+kafka_server: localhost
+kafka_port: 9092
+
+## Vars for mongodb
+mongodb_exporter_version: 0.20.7
+mongodb_exporter_user: mongodb_exporter
+mongodb_uri: 172.16.0.24
+mongodb_port: 27017
+mongodb_username: cssp
+mongodb_password: Cssp#143
+
+## Vars for mysql
+mysqld_exporter_user: mysqld_exporter
+mysqld_exporter_version: 0.13.0
+database_server: localhost
+database_port: 3306
+database_username: root
+database_password: Cssp123

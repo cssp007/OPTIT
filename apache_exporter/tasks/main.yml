@@ -1,0 +1,47 @@
+---
+# tasks file for node-exporter
+- name: Adding the user for apache exporter
+  user:
+    name: '{{ apache_exporter_user }}'
+    shell: /bin/false
+    create_home: no
+
+- name: Download and extracted apache exporter
+  unarchive:
+    src: https://github.com/Lusitaniae/apache_exporter/releases/download/v{{ apache_exporter_version }}/apache_exporter-{{ apache_exporter_version }}.linux-amd64.tar.gz 
+    dest: /tmp/
+    remote_src: True
+
+- name: Copy apache exporter excutable file
+  copy:
+    src: '/tmp/apache_exporter-{{ apache_exporter_version }}.linux-amd64/{{ item }}'
+    dest: '/usr/local/bin/{{ item }}'
+    remote_src: yes
+    owner: '{{ apache_exporter_user }}'
+    group: '{{ apache_exporter_user }}'
+    mode: 0770
+  with_items:
+    - apache_exporter
+  notify: Restart apache
+
+- name: Copy apache exporter service file
+  template:
+    src: '{{ item }}'
+    dest: /etc/systemd/system/apache_exporter.service
+  with_items:
+    - apache_exporter.service.j2
+  notify: Restart apache
+
+- name: Force systemd to reread configs
+  systemd: daemon_reload=yes
+
+- name: Start service apache_exporter, if not started
+  service:
+    name: apache_exporter
+    state: started
+    enabled: yes
+
+- name: Delete download
+  file:
+    path: /tmp/apache_exporter-{{ apache_exporter_version }}.linux-amd64
+    state: absent

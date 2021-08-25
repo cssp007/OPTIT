@@ -1,0 +1,15 @@
+[Unit]
+Description=Nginx Exporter
+After=network.target
+
+[Service]
+User={{ nginx_exporter_user }}
+Group={{ nginx_exporter_user }}
+Type=simple
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/nginx-prometheus-exporter -nginx.scrape-uri={{ nginx_website_protocol }}://{{ nginx_website_name }}:{{ nginx_website_port }}/stub_status
+SyslogIdentifier=nginx_exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

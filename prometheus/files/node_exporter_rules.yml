@@ -1,0 +1,113 @@
+groups:
+  - name: custom_rules
+    rules:
+      - record: node_memory_MemFree_percent
+        expr: 100 - (100 * node_memory_MemFree_bytes / node_memory_MemTotal_bytes)
+
+      - record: node_filesystem_free_percent
+        expr: 100 * node_filesystem_free_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}
+
+  - name: alert_rules
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          description: "Host is down."
+
+# Root Partition:
+      - alert: Root Partition High
+        expr: node_filesystem_free_percent <= 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          value: "{{ $value }}%"
+          description: "Disk available is less than 10%."
+
+      - alert: Root Partition
+        expr: 10 < node_filesystem_free_percent <= 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          value: "{{ $value }}%"
+          description: "Disk available is less than 20%."
+
+# Swap Memory:
+      - alert: Swap Memory
+        expr: 10 < node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes * 100 <= 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          value: "{{ $value }}%"
+          description: "Swap memory available is less than 20%"
+
+      - alert: Swap High Memory
+        expr: node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes * 100 <= 10
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          value: "{{ $value }}%"
+          description: "Swap memory available is less than 10%."
+
+# RAM
+      - alert: Host Out Of Memory High
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 <= 10
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          value: "{{ $value }}%"
+          description: "Memory available is less than 10%"
+
+      - alert: Host Out Of Memory
+        expr: 10 < node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 <= 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          value: "{{ $value }}%"
+          description: "Memory available is less than 20%."
+
+# CPU Utilization
+      - alert: Host High Cpu Utilization
+        expr: 100 - (avg by(instance, job) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) >= 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          value: "{{ $value }}%"
+          description: "CPU Utilization is greater than 90%."
+
+      - alert: Host Cpu Utilization
+        expr: 90 > 100 - (avg by(instance, job) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) >= 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          value: "{{ $value }}%"
+          description: "CPU Utilization is greater than 80%."
+
+# CPU LOAD
+      - alert: Host High Cpu Load
+        expr: node_load1 >= 1.7
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          value: "{{ $value }}"
+          description: "CPU load of 1min is greater than or equal to 1.7."
+
+      - alert: Host Cpu Load
+        expr: 1.7 > node_load1 >= 1.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          value: "{{ $value }}"
+          description: "CPU load of 1min is in between 1.5 to 1.7."

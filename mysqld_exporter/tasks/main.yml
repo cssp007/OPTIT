@@ -1,0 +1,45 @@
+---
+# tasks file for mysqld_exporter
+- name: Adding the user for mysqld_exporter
+  user:
+    name: '{{ mysqld_exporter_user }}'
+    shell: /bin/false
+    create_home: no
+
+- name: Download and extracted mysqld exporter
+  unarchive:
+    src: https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysqld_exporter_version }}/mysqld_exporter-{{ mysqld_exporter_version }}.linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: True
+
+- name: Copy mysqld exporter excutable file
+  copy:
+    src: '/tmp/mysqld_exporter-{{ mysqld_exporter_version }}.linux-amd64/{{ item }}'
+    dest: '/usr/local/bin/{{ item }}'
+    remote_src: yes
+    owner: '{{ mysqld_exporter_user }}'
+    group: '{{ mysqld_exporter_user }}'
+    mode: 0770
+  with_items:
+    - mysqld_exporter
+
+- name: Copy mysqld exporter service file
+  template:
+    src: '{{ item }}'
+    dest: /etc/systemd/system/mysqld_exporter.service
+  with_items:
+    - mysqld_exporter.service.j2
+
+- name: Force systemd to reread configs
+  systemd: daemon_reload=yes
+
+- name: Start service node_exporter, if not started
+  service:
+    name: mysqld_exporter
+    state: started
+    enabled: yes
+
+- name: Delete download
+  file:
+    path: /tmp/mysqld_exporter-{{ mysqld_exporter_version }}.linux-amd64
+    state: absent

@@ -1,0 +1,8 @@
+---
+# defaults file for apache_exporter
+apache_exporter_user: apache_exporter
+apache_exporter_version: 0.10.0
+apache_protocol: http
+scrape_uri: 54.250.19.136
+scrape_uri_port: 80
+scrape_uri_location: server-status

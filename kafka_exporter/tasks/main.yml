@@ -1,0 +1,45 @@
+---
+# tasks file for kafka_exporter
+- name: Adding the user for kafka_exporter
+  user:
+    name: '{{ kafka_exporter_user }}'
+    shell: /bin/false
+    create_home: no
+
+- name: Download and extracted kafka exporter
+  unarchive:
+    src: https://github.com/danielqsj/kafka_exporter/releases/download/v{{ kafka_exporter_version }}/kafka_exporter-{{ kafka_exporter_version }}.linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: True
+
+- name: Copy kafka exporter excutable file
+  copy:
+    src: '/tmp/kafka_exporter-{{ kafka_exporter_version }}.linux-amd64/{{ item }}'
+    dest: '/usr/local/bin/{{ item }}'
+    remote_src: yes
+    owner: '{{ kafka_exporter_user }}'
+    group: '{{ kafka_exporter_user }}'
+    mode: 0770
+  with_items:
+    - kafka_exporter
+
+- name: Copy kafka exporter service file
+  template:
+    src: '{{ item }}'
+    dest: /etc/systemd/system/kafka_exporter.service
+  with_items:
+    - kafka_exporter.service.j2
+
+- name: Force systemd to reread configs
+  systemd: daemon_reload=yes
+
+- name: Start service kafka_exporter, if not started
+  service:
+    name: kafka_exporter
+    state: started
+    enabled: yes
+
+- name: Delete download
+  file:
+    path: /tmp/kafka_exporter-{{ kafka_exporter_version }}.linux-amd64
+    state: absent

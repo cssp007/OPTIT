@@ -1,0 +1,15 @@
+[Unit]
+Description=Kafka Exporter
+After=network.target
+
+[Service]
+User={{ kafka_exporter_user }}
+Group={{ kafka_exporter_user }}
+Type=simple
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/kafka_exporter --kafka.server={{ kafka_server }}:{{ kafka_port }}
+SyslogIdentifier=kafka_exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

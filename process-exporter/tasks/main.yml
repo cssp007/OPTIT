@@ -1,0 +1,63 @@
+---
+# tasks file for process-exporter
+- name: Adding the user for proces-exporter
+  user:
+    name: '{{ process_exporter_user }}'
+    shell: /bin/false
+    create_home: no
+
+- name: Download and extracted process exporter
+  unarchive:
+    src: https://github.com/ncabatoff/process-exporter/releases/download/v{{ process_exporter_version }}/process-exporter-{{ process_exporter_version }}.linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: True
+
+- name: Create process_exporter directory
+  file:
+    path: '{{ item }}'
+    state: directory
+    owner: '{{ process_exporter_user }}'
+    group: '{{ process_exporter_user }}'
+  with_items:
+    - /etc/process_exporter
+
+- name: Copy config file
+  copy:
+    src: '{{ item }}'
+    dest: '/etc/process_exporter/{{ item }}'
+    owner: '{{ process_exporter_user }}'
+    group: '{{ process_exporter_user }}'
+  with_items:
+    - all.yml
+
+- name: Copy process exporter excutable file
+  copy:
+    src: '/tmp/process-exporter-{{ process_exporter_version }}.linux-amd64/{{ item }}'
+    dest: '/usr/local/bin/{{ item }}'
+    remote_src: yes
+    owner: '{{ process_exporter_user }}'
+    group: '{{ process_exporter_user }}'
+    mode: 0770
+  with_items:
+    - process-exporter
+
+- name: Copy process exporter service file
+  template:
+    src: '{{ item }}'
+    dest: /etc/systemd/system/process_exporter.service
+  with_items:
+    - process_exporter.service.j2
+
+- name: Force systemd to reread configs
+  systemd: daemon_reload=yes
+
+- name: Start service process_exporter, if not started
+  service:
+    name: process_exporter
+    state: started
+    enabled: yes
+
+- name: Delete download
+  file:
+    path: /tmp/process-exporter-{{ process_exporter_version }}.linux-amd64
+    state: absent

@@ -1,0 +1,5 @@
+---
+# defaults file for prometheus
+prometheus_version: 2.28.1
+prometheus_user: prometheus
+URLs: 'www.google.com, www.youtube.com'

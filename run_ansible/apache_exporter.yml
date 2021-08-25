@@ -1,0 +1,6 @@
+---
+- hosts: apache_exporter
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/ansible/apache_exporter

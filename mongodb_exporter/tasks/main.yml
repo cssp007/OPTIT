@@ -1,0 +1,47 @@
+---
+# tasks file for mongodb_exporter
+- name: Adding the user for mongodb_exporter
+  user:
+    name: '{{ mongodb_exporter_user }}'
+    shell: /bin/false
+    create_home: no
+
+- name: Download and extracted mongodb exporter
+  unarchive:
+    src: https://github.com/percona/mongodb_exporter/releases/download/v{{ mongodb_exporter_version }}/mongodb_exporter-{{ mongodb_exporter_version }}.linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: True
+
+- name: Copy mongodb exporter excutable file
+  copy:
+    src: '/tmp/mongodb_exporter-{{ mongodb_exporter_version }}.linux-amd64/{{ item }}'
+    dest: '/usr/local/bin/{{ item }}'
+    remote_src: yes
+    owner: '{{ mongodb_exporter_user }}'
+    group: '{{ mongodb_exporter_user }}'
+    mode: 0770
+  with_items:
+    - mongodb_exporter
+  notify: Restart mongodb exporter
+
+- name: Copy mongodb exporter service file
+  template:
+    src: '{{ item }}'
+    dest: /etc/systemd/system/mongodb_exporter.service
+  with_items:
+    - mongodb_exporter.service.j2
+  notify: Restart mongodb exporter
+
+- name: Force systemd to reread configs
+  systemd: daemon_reload=yes
+
+- name: Start service mongodb_exporter, if not started
+  service:
+    name: mongodb_exporter
+    state: started
+    enabled: yes
+
+- name: Delete download
+  file:
+    path: /tmp/mongodb_exporter-{{ mongodb_exporter_version }}.linux-amd64
+    state: absent

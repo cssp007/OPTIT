@@ -1,0 +1,4 @@
+---
+# defaults file for process-exporter
+process_exporter_version: 0.7.5
+process_exporter_user: process_exporter

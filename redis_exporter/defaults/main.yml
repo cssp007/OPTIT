@@ -1,0 +1,4 @@
+---
+# defaults file for redis_exporter
+redis_exporter_user: redis_exporter
+redis_exporter_version: 1.26.0

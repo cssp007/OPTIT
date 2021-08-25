@@ -1,0 +1,15 @@
+[Unit]
+Description=Redis Exporter
+After=network.target
+
+[Service]
+User={{ redis_exporter_user }}
+Group={{ redis_exporter_user }}
+Type=simple
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/redis_exporter 
+SyslogIdentifier=redis_exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

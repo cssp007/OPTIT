@@ -1,0 +1,6 @@
+---
+# handlers file for apache_exporter
+- name: Restart apache
+  service:
+    name: apache_exporter
+    state: restarted

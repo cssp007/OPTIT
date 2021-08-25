@@ -1,0 +1,6 @@
+---
+# defaults file for pritunl
+mongodb_key: https://www.mongodb.org/static/pgp/server-5.0.asc
+mongodb_repo: 'deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse'
+pritunl_key_id: 7568D9BB55FF9E5287D586017AE645C0CF8E292A
+pritunl_repo: 'deb http://repo.pritunl.com/stable/apt focal main'

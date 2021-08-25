@@ -1,0 +1,83 @@
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+
+{% if groups['prometheus_grafana_alertmanager_blackbox']|length %}
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets: [ '{{groups['prometheus_grafana_alertmanager_blackbox']|join(':9093\', \'')}}:9093' ]
+{% endif %}
+
+rule_files:
+  - "rules/node_exporter_rules.yml"
+  - "rules/blackbox_exporter_rules.yml"
+
+scrape_configs:
+{% if groups['node_and_process_exporters']|length %}
+  - job_name: 'node_exporter'
+    static_configs:
+    - targets: [ '{{groups['node_and_process_exporters']|join(':9100\', \'')}}:9100' ]
+
+  - job_name: 'process_exporter'
+    static_configs:
+    - targets: [ '{{groups['node_and_process_exporters']|join(':9256\', \'')}}:9256' ]
+{% endif %}
+
+{% if groups['apache_exporter']|length %}
+  - job_name: 'apache_exporter'
+    static_configs:
+    - targets: [ '{{groups['apache_exporter']|join(':9117\', \'')}}:9117' ]
+{% endif %}
+
+{% if groups['mysqld_exporter']|length %}
+  - job_name: 'mysqld_exporter'
+    static_configs:
+    - targets: [ '{{groups['mysqld_exporter']|join(':9104\', \'')}}:9104' ]
+{% endif %}
+
+{% if groups['redis_exporter']|length %}
+  - job_name: 'redis_exporter'
+    static_configs:
+    - targets: [ '{{groups['redis_exporter']|join(':9121\', \'')}}:9121' ]
+{% endif %}
+
+{% if groups['mongodb_exporter']|length %}
+  - job_name: 'mongodb_exporter'
+    static_configs:
+    - targets: [ '{{groups['mongodb_exporter']|join(':9216\', \'')}}:9216' ]
+{% endif %}
+
+{% if groups['nginx_exporter']|length %}
+  - job_name: 'nginx_exporter'
+    static_configs:
+    - targets: [ '{{groups['nginx_exporter']|join(':9113\', \'')}}:9113' ]
+{% endif %}
+
+{% if groups['kafka_exporter']|length %}
+  - job_name: 'kafka_exporter'
+    static_configs:
+    - targets: [ '{{groups['kafka_exporter']|join(':9308\', \'')}}:9308' ]
+{% endif %}
+
+{% if groups['rabbitmq_exporter']|length %}
+  - job_name: 'rabbitmq_exporter'
+    static_configs:
+    - targets: [ '{{groups['rabbitmq_exporter']|join(':9308\', \'')}}:9308' ]
+{% endif %}
+
+{% if URLs|length %}
+  - job_name: 'URLs'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets: [ {{URLs}} ]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 127.0.0.1:9115
+{% endif %}

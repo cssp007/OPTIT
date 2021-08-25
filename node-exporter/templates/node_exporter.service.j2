@@ -1,0 +1,12 @@
+[Unit]
+Description=Node Exporter
+After=network.target
+
+[Service]
+User={{ node_exporter_user }}
+Group={{ node_exporter_user }}
+Type=simple
+ExecStart=/usr/local/bin/node_exporter --collector.systemd --collector.processes --collector.tcpstat
+
+[Install]
+WantedBy=multi-user.target

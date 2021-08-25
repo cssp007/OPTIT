@@ -1,0 +1,86 @@
+---
+# tasks file for prometheus
+- name: Updating..
+  apt:
+    update_cache: yes
+
+- name: Adding the user for prometheus
+  user:
+    name: '{{ prometheus_user }}'
+    shell: /bin/false
+    create_home: no
+
+- name: Download and extract prometheus
+  unarchive:
+    src: https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: True
+
+- name: Create directories for prometheus
+  file:
+    path: '{{ item }}'
+    state: directory
+    recurse: yes
+    owner: '{{ prometheus_user }}'
+    group: '{{ prometheus_user }}'
+  with_items:
+    - /var/lib/prometheus
+    - /etc/prometheus
+    - /etc/prometheus/rules
+   
+- name: Copy required directories
+  command: cp -r /tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }} /etc/prometheus/
+  with_items:
+    - consoles
+    - console_libraries
+
+- name: Template a file to /etc/prometheus/prometheus.yml
+  template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: '{{ prometheus_user }}'
+    group: '{{ prometheus_user }}'
+    mode: '0644'
+  notify: Restart service
+
+- name: Copy executable files
+  copy:
+    src: '/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}'
+    dest: '/usr/local/bin/{{ item }}'
+    remote_src: yes
+    owner: '{{ prometheus_user }}'
+    group: '{{ prometheus_user }}'
+    mode: 0770
+  with_items:
+    - prometheus
+    - promtool
+
+- name: Copy rules files
+  copy:
+    src: '{{ item }}'
+    dest: '/etc/prometheus/rules/{{ item }}'
+  with_items:
+    - node_exporter_rules.yml
+    - blackbox_exporter_rules.yml
+    - process_exporter_rules.yml
+  notify: Restart service
+
+- name: Copy prometheus service
+  template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+  notify: Restart service
+
+- name: Force systemd to reread configs
+  systemd: daemon_reload=yes
+
+- name: Start and enable service prometheus
+  service:
+    name: prometheus
+    state: started
+    enabled: yes
+
+- name: Delete downloaded 
+  file:
+    path: /tmp/prometheus-{{ prometheus_version }}.linux-amd64
+    state: absent

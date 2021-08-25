@@ -1,0 +1,19 @@
+[Unit]
+Description=Apache Exporter
+After=network.target
+
+[Service]
+User={{ apache_exporter_user }}
+Group={{ apache_exporter_user }}
+Type=simple
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/apache_exporter \
+    --insecure \
+    --scrape_uri="{{ apache_protocol }}://{{ scrape_uri }}:{{ scrape_uri_port }}/{{ scrape_uri_location }}?auto" \
+    --telemetry.address="0.0.0.0:9117" \
+    --telemetry.endpoint="/metrics"
+SyslogIdentifier=apache_exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

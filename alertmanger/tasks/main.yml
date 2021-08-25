@@ -1,0 +1,66 @@
+---
+# tasks file for alertmanger
+- name: Adding the user for alertmanager
+  user:
+    name: '{{ alertmanager_user }}'
+    shell: /bin/false
+    create_home: no
+
+- name: Create a directory if it does not exist
+  file:
+    path: '{{ item }}'
+    state: directory
+    mode: '0755'
+    owner: '{{ alertmanager_user }}'
+    group: '{{ alertmanager_user }}'
+  with_items:
+    - /etc/alertmanager
+    - /data
+
+- name: Download and extracted alertmanager
+  unarchive:
+    src: https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: True
+
+- name: Copy alertmanager excutable file
+  copy:
+    src: '{{ item }}'
+    dest: /usr/local/bin/alertmanager
+    remote_src: yes
+    mode: 0770
+    owner: '{{ alertmanager_user }}'
+    group: '{{ alertmanager_user }}'
+  with_items:
+    - /tmp/alertmanager-{{ alertmanager_version }}.linux-amd64/alertmanager
+  notify: Restart alertmanager
+
+- name: Copy alertmanager service file
+  template:
+    src: '{{ item }}'
+    dest: /etc/systemd/system/alertmanager.service
+  with_items:
+    - alertmanager.service
+  notify: Restart alertmanager
+
+- name: Copy alertmanager config file
+  template:
+    src: '{{ item }}'
+    dest: /etc/alertmanager/alertmanager.yml
+  with_items:
+    - alertmanager.yml
+  notify: Restart alertmanager
+
+- name: Force systemd to reread configs
+  systemd: daemon_reload=yes
+
+- name: Start service alertmanager, if not started
+  service:
+    name: alertmanager
+    state: started
+    enabled: yes
+
+- name: Delete download
+  file:
+    path: /tmp/alertmanager-{{ alertmanager_version }}.linux-amd64
+    state: absent

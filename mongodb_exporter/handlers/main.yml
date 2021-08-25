@@ -1,0 +1,6 @@
+---
+# handlers file for mongodb_exporter
+- name: Restart mongodb exporter
+  service:
+    name: mongodb_exporter
+    state: restarted
