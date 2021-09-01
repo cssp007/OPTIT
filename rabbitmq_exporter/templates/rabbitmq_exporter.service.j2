@@ -1,0 +1,15 @@
+[Unit]
+Description=RabbitMQ Exporter
+After=network.target
+
+[Service]
+User={{ rabbitmq_exporter_user }}
+Group={{ rabbitmq_exporter_user }}
+Type=simple
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/rabbitmq_exporter -config-file /tmp/config.example.json
+SyslogIdentifier=rabbitmq_exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

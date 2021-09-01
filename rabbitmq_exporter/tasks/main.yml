@@ -1,2 +1,52 @@
 ---
 # tasks file for rabbitmq_exporter
+- name: Adding the user for rabbitmq_exporter
+  user:
+    name: '{{ rabbitmq_exporter_user }}'
+    shell: /bin/false
+    create_home: no
+
+- name: Download and extracted rabbitmq exporter
+  unarchive:
+    src: https://github.com/kbudde/rabbitmq_exporter/releases/download/v{{ rabbitmq_exporter_version }}/rabbitmq_exporter-{{ rabbitmq_exporter_version }}.linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: True
+
+- name: Copy rabbitmq exporter excutable file
+  copy:
+    src: '/tmp/rabbitmq_exporter-{{ rabbitmq_exporter_version }}.linux-amd64/{{ item }}'
+    dest: '/usr/local/bin/{{ item }}'
+    remote_src: yes
+    owner: '{{ rabbitmq_exporter_user }}'
+    group: '{{ rabbitmq_exporter_user }}'
+    mode: 0770
+  with_items:
+    - rabbitmq_exporter
+
+- name: Copy rabbitmq exporter service file
+  template:
+    src: '{{ item }}'
+    dest: /etc/systemd/system/rabbitmq_exporter.service
+  with_items:
+    - rabbitmq_exporter.service.j2
+
+- name: Copy rabbitmq config file
+  copy:
+    src: '{{ item }}'
+    dest: /tmp/config.example.json
+  with_items:
+    - config.example.json
+
+- name: Force systemd to reread configs
+  systemd: daemon_reload=yes
+
+- name: Start service rabbitmq_exporter, if not started
+  service:
+    name: rabbitmq_exporter
+    state: started
+    enabled: yes
+
+- name: Delete download
+  file:
+    path: /tmp/rabbitmq_exporter-{{ rabbitmq_exporter_version }}.linux-amd64
+    state: absent

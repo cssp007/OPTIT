@@ -1,0 +1,6 @@
+---
+- hosts: rabbitmq_exporter
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/rabbitmq_exporter

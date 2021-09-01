@@ -1,2 +1,4 @@
 ---
 # defaults file for rabbitmq_exporter
+rabbitmq_exporter_user: rabbitmq_exporter
+rabbitmq_exporter_version: 1.0.0-RC8
