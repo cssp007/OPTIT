@@ -1,0 +1,25 @@
+---
+- hosts: prometheus_grafana_alertmanager_blackbox
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/prometheus 
+
+- hosts: prometheus_grafana_alertmanager_blackbox
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/grafana
+
+- hosts: node_and_process_exporters
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/node-exporter
+    - /home/ubuntu/OPTIT/process-exporter
+
+- hosts: kafka_exporter
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/kafka_exporter

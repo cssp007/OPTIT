@@ -21,7 +21,7 @@
     state: latest
 
 - name: Adding data source provisioning file
-  copy:
+  template:
     src: '{{ item }}'
     dest: '/etc/grafana/provisioning/datasources/{{ item }}'
     owner: root
@@ -60,6 +60,8 @@
   with_items:
     - mongodb_dashboard.json
     - infra_dashboard.json
+    - process_exporter.json
+    - kafka_dashboard.json
   notify: Restart grafana
 
 - name: Just force systemd to reread configs

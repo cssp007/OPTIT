@@ -1,0 +1,52 @@
+---
+- hosts: prometheus_grafana_alertmanager_blackbox
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/grafana
+    - /home/ubuntu/OPTIT/prometheus
+    - /home/ubuntu/OPTIT/alertmanger
+    - /home/ubuntu/OPTIT/blackbox-exporter
+
+- hosts: node_and_process_exporters
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/node-exporter
+    - /home/ubuntu/OPTIT/process-exporter
+
+- hosts: apache_exporter
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/apache_exporter
+
+- hosts: mysqld_exporter
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/mysqld_exporter
+
+- hosts: redis_exporter
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/redis_exporter
+
+- hosts: mongodb_exporter
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/mongodb_exporter
+
+- hosts: nginx_exporter
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/nginx_exporter
+
+- hosts: kafka_exporter
+  become: yes
+  gather_facts: yes
+  roles:
+    - /home/ubuntu/OPTIT/kafka_exporter

@@ -2,3 +2,6 @@
 # defaults file for grafana
 grafana_key: "https://packages.grafana.com/gpg.key"
 grafana_repo: "deb https://packages.grafana.com/oss/deb stable main"
+datasources:
+        - { name: Prometheus, hostname: localhost, port: 9090, editable: True, default: True } 
+        - { name: Prometheus1, hostname: 192.168.0.2, port: 9090, editable: False, default: False }

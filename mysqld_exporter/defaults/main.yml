@@ -3,5 +3,6 @@
 mysqld_exporter_user: mysqld_exporter
 mysqld_exporter_version: 0.13.0
 database_server: localhost
+database_port: 3306
 database_username: root
 database_password: Cssp123

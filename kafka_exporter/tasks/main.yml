@@ -23,6 +23,16 @@
   with_items:
     - kafka_exporter
 
+- name: Copy kafka exporter excutable file
+  copy:
+    src: '{{ item }}'
+    dest: '/usr/local/bin/{{ item }}'
+    owner: '{{ kafka_exporter_user }}'
+    group: '{{ kafka_exporter_user }}'
+    mode: 0770
+  with_items:
+    - kafka_config.json
+
 - name: Copy kafka exporter service file
   template:
     src: '{{ item }}'
