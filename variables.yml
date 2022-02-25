@@ -22,13 +22,13 @@ blackbox_exporter_user: blackbox_exporter
 # vars for Alertmanger
 alertmanager_version: 0.22.2
 alertmanager_user: alertmanger
-smtp_from: cimplyfive.developer@gmail.com
+smtp_from: abc@gmail.com
 smtp_smarthost: smtp.gmail.com:587
-smtp_auth_username: cimplyfive.developer@gmail.com
-smtp_auth_identity: "Cimplyfive Alertmanager"
-smtp_auth_password: bxdzvphdcmgvbqhq
+smtp_auth_username: abc@gmail.com
+smtp_auth_identity: "ABC Alertmanager"
+smtp_auth_password: jhhsagavgasvssdf
 repeat_interval: 4h
-receivers: 'somnath.p@optit.co, pandey.somnath007@gmail.com' 
+receivers: 'abcdsd@gmail.com' 
 #slack_url:
 #slack_channel_name:
 
